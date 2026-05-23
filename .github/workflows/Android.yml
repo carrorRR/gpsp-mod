@@ -1,0 +1,36 @@
+name: Build gpSP Mod for Android (32-bit)
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Android NDK
+      run: |
+        echo "Downloading Android NDK r25c..."
+        wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+        unzip -q android-ndk-r25c-linux.zip
+        echo "NDK_PATH=$(pwd)/android-ndk-r25c" >> $GITHUB_ENV
+
+    - name: Build with NDK
+      run: |
+        export PATH=$NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+        export AR=armv7a-linux-androideabi21-ar
+        export CC=armv7a-linux-androideabi21-clang
+        export CXX=armv7a-linux-androideabi21-clang++
+        export LINK=$CXX
+        make -f Makefile.libretro platform=android ARCH=arm
+        cp gpsp_libretro.so gpsp_mod_libretro_android.so
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gpsp-mod-android-32bit
+        path: gpsp_mod_libretro_android.so
