@@ -1,0 +1,21 @@
+name: Build gpSP 32bit Android
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r21e
+      - name: Build 32bit arm
+        run: |
+          export NDK=$ANDROID_NDK_HOME
+          make -f Makefile.libretro platform=android-arm
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpsp-32bit-android
+          path: gpsp_libretro.so
